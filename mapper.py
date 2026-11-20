@@ -14,10 +14,9 @@ from base_processor import BaseDatasetProcessor
 
 class TestMapper(BaseDatasetProcessor):
     """
-    Maps test observations with appropriate idea
+    Maps test observations with appropriate ideal
     functions on the criterion of maximum specified
     deviation.
-
 
     Inherits common dataset validation functionality
     through BaseProcessor.
@@ -28,19 +27,15 @@ class TestMapper(BaseDatasetProcessor):
         Starts the TestMapper function.
 
         Parameters:
-
             test_df (pandas.DataFrame): Test dataset.
             ideal_df (pandas.DataFrame): Ideal-function dataset.
             best_functions (dict): Selected ideal functions,
             incorporating their maximum training deviations.
 
-
         Raises:
-
             TypeError: If any of the datasets is not a DataFrame.
             ValueError: If the desired columns are not available
             or selected function information is invalid.
-
             InvalidDatasetError: If the ideal dataset consists of
             duplicate X coordinates or desired functions are not
             available.
@@ -99,7 +94,6 @@ class TestMapper(BaseDatasetProcessor):
         )
 
         # Retrieves the names of selected ideal functions
-        # Extract the names of the selected ideal functions
         selected_ideal_columns = [
             result[0] for result in self.best_functions.values()
         ]
@@ -136,19 +130,13 @@ class TestMapper(BaseDatasetProcessor):
 
         The maximum permitted deviation is computed as:
 
-             Threshold = Maximum Training Deviation * sqrt(2)
-
+            Threshold = Maximum Training Deviation * sqrt(2)
 
         Returns:
-
-
-            List: Mapping results consist of four field:
-
+            list: Mapping results containing:
                 x: Test X coordinate.
-                y: Test y value.
-                delta_y = Absolute deviations through
-                selected ideal functions
-
+                y: Test Y value.
+                delta_y: Absolute deviation.
                 ideal_function_number: Selected ideal function name.
         """
 
@@ -160,7 +148,7 @@ class TestMapper(BaseDatasetProcessor):
             x = test_row["x"]
             y = test_row["y"]
 
-            # Validates whether the X-ccordinates exist in the ideal dataset
+            # Validates whether the X-coordinates exist in the ideal dataset
             if x not in self.ideal_indexed.index:
                 raise InvalidDatasetError(
                     f"Test X coordinate {x} does not exist "
@@ -171,7 +159,7 @@ class TestMapper(BaseDatasetProcessor):
             best_deviation = float("inf")
             best_function = None
 
-            # Comparative analysis against all the selected ideal functions
+            # Comparative analysis against all selected ideal functions
             for _, best_match in self.best_functions.items():
 
                 ideal_function, _, maximum_deviation = best_match
@@ -191,7 +179,7 @@ class TestMapper(BaseDatasetProcessor):
                     best_deviation = deviation
                     best_function = ideal_function
 
-            # Stores the formulated mapping utilizing four desired fields
+            # Stores the mapping utilizing four desired fields
             if best_function is not None:
 
                 mapping_results.append({
@@ -202,6 +190,31 @@ class TestMapper(BaseDatasetProcessor):
                 })
 
         return mapping_results
+
+    def generate_mapping_summary(self, mapping_results):
+        """
+        Generates a summary of test-data mapping results.
+
+        Parameters:
+            mapping_results (list): Successfully mapped observations.
+
+        Returns:
+            dict: Total, mapped, unmapped observations
+            and mapping success percentage.
+        """
+
+        total = len(self.test_df)
+        mapped = len(mapping_results)
+        unmapped = total - mapped
+
+        success_rate = (mapped / total * 100) if total > 0 else 0
+
+        return {
+            "total_observations": total,
+            "mapped_observations": mapped,
+            "unmapped_observations": unmapped,
+            "mapping_success_rate": round(success_rate, 2)
+        }
 
 
 if __name__ == "__main__":
@@ -224,13 +237,22 @@ if __name__ == "__main__":
     mapper = TestMapper(test_df, ideal_df, best_functions)
     mapping_results = mapper.map_test_data()
 
-    # Exhibit mapping results
-    print("Test Data Mapping Results\n")
+    # Generates mapping summary
+    mapping_summary = mapper.generate_mapping_summary(mapping_results)
 
-    print("Total test observations:", len(test_df))
-    print("Successfully mapped observations:", len(mapping_results))
-    print("Unmapped observations:", len(test_df) - len(mapping_results))
+    # Displays mapping summary
+    print("Test Data Mapping Summary\n")
 
+    print("Total test observations:",
+          mapping_summary["total_observations"])
+    print("Successfully mapped observations:",
+          mapping_summary["mapped_observations"])
+    print("Unmapped observations:",
+          mapping_summary["unmapped_observations"])
+    print("Mapping success rate:",
+          str(mapping_summary["mapping_success_rate"]) + "%")
+
+    # Exhibits first five mapping results
     print("\nFirst five mapping results:")
 
     for result in mapping_results[:5]:
