@@ -1,4 +1,3 @@
-
 """
 mapper.py
 
@@ -191,6 +190,33 @@ class TestMapper(BaseDatasetProcessor):
 
         return mapping_results
 
+    def generate_mapping_summary(self, mapping_results):
+        """
+        Generates a summary of test-data mapping results.
+
+        Parameters:
+            mapping_results (list): Successfully mapped observations.
+
+        Returns:
+            dict: Total, mapped, unmapped observations
+            and mapping success percentage.
+        """
+
+        total = len(self.test_df)
+        mapped = len(mapping_results)
+        unmapped = total - mapped
+
+        success_percentage = (
+            (mapped / total) * 100 if total > 0 else 0.0
+        )
+
+        return {
+            "total_observations": total,
+            "mapped_observations": mapped,
+            "unmapped_observations": unmapped,
+            "mapping_success_percentage": success_percentage
+        }
+
 
 if __name__ == "__main__":
 
@@ -217,3 +243,15 @@ if __name__ == "__main__":
 
     for result in mapping_results[:5]:
         print(result)
+
+    # Generates and displays the mapping summary
+    mapping_summary = mapper.generate_mapping_summary(mapping_results)
+
+    print("\nMapping Summary:")
+    print(f"Total observations: {mapping_summary['total_observations']}")
+    print(f"Mapped observations: {mapping_summary['mapped_observations']}")
+    print(f"Unmapped observations: {mapping_summary['unmapped_observations']}")
+    print(
+        "Mapping success percentage: "
+        f"{mapping_summary['mapping_success_percentage']:.2f}%"
+    )
