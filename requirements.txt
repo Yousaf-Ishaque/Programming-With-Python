@@ -1,0 +1,8 @@
+# Core application dependencies
+numpy
+pandas
+SQLAlchemy
+bokeh
+
+# Test dependency
+pytest
